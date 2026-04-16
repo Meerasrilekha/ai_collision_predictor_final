@@ -5,7 +5,6 @@ import '../providers/environmental_provider.dart';
 import '../utils/ai_logic.dart';
 import '../utils/performance_monitor.dart';
 import 'dart:async';
-import 'dart:ui' as ui;
 
 /// Simulation page visualizing flying cars with swarm intelligence.
 /// Displays real-time metrics and AR-style overlay.
@@ -178,13 +177,31 @@ class _SimulationPageState extends State<SimulationPage>
               Positioned(
                 bottom: 20,
                 right: 20,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    simProvider.toggleSimulation();
-                  },
-                  child: Icon(
-                    simProvider.isRunning ? Icons.pause : Icons.play_arrow,
-                  ),
+                child: Row(
+                  children: [
+                    FloatingActionButton(
+                      onPressed: () {
+                        if (simProvider.isRecording) {
+                          simProvider.stopRecording();
+                        } else {
+                          simProvider.startRecording();
+                        }
+                      },
+                      backgroundColor: simProvider.isRecording ? Colors.red : Colors.green,
+                      child: Icon(
+                        simProvider.isRecording ? Icons.stop : Icons.videocam,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    FloatingActionButton(
+                      onPressed: () {
+                        simProvider.toggleSimulation();
+                      },
+                      child: Icon(
+                        simProvider.isRunning ? Icons.pause : Icons.play_arrow,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

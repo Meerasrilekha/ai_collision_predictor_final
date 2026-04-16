@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../providers/simulation_provider.dart';
+
+import 'dart:html' as html;
 
 /// Results page showing summarized metrics and distance vs time graph.
 /// Option to save/share screenshot and restart simulation.
@@ -105,11 +108,11 @@ class ResultsPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () => _exportResults(context, metrics, 'json'),
+                  onPressed: () => _exportResults(context, metrics, 'json', provider),
                   child: const Text('Download JSON'),
                 ),
                 ElevatedButton(
-                  onPressed: () => _exportResults(context, metrics, 'csv'),
+                  onPressed: () => _exportResults(context, metrics, 'csv', provider),
                   child: const Text('Download CSV'),
                 ),
                 ElevatedButton(
@@ -127,15 +130,12 @@ class ResultsPage extends StatelessWidget {
     );
   }
 
-  Future<void> _exportResults(BuildContext context, Map<String, dynamic> metrics, String format) async {
+  Future<void> _exportResults(BuildContext context, Map<String, dynamic> metrics, String format, SimulationProvider provider) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      late File file;
       late String content;
 
       if (format == 'json') {
-        file = File('${directory.path}/simulation_report_$timestamp.json');
         final report = {
           'timestamp': DateTime.now().toIso8601String(),
           'summary': {
@@ -147,19 +147,37 @@ class ResultsPage extends StatelessWidget {
         };
         content = report.toString();
       } else if (format == 'csv') {
-        file = File('${directory.path}/simulation_report_$timestamp.csv');
-        final distanceHistory = metrics['distanceHistory'] as List<double>? ?? [];
-        content = 'Time,Distance\n';
-        for (int i = 0; i < distanceHistory.length; i++) {
-          content += '$i,${distanceHistory[i]}\n';
+        final data = provider.recordedData;
+        if (data.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No recorded data available')),
+          );
+          return;
+        }
+        content = 'Frame,Timestamp,VehicleID,X,Y,VX,VY,AX,AY,Status,StaticRisk,TemporalRisk\n';
+        for (var row in data) {
+          content += '${row['Frame']},${row['Timestamp']},${row['VehicleID']},${row['X']},${row['Y']},${row['VX']},${row['VY']},${row['AX']},${row['AY']},${row['Status']},${row['StaticRisk']},${row['TemporalRisk']}\n';
         }
       }
 
-      await file.writeAsString(content);
+      if (kIsWeb) {
+        // For web, open in new tab with data URL
+        final encoded = Uri.encodeComponent(content);
+        final url = 'data:text/csv;charset=utf-8,$encoded';
+        html.window.open(url, '_blank');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('CSV opened in new tab - save the page to download')),
+        );
+      } else {
+        // For mobile/desktop, save to documents directory
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/simulation_${format}_$timestamp.$format');
+        await file.writeAsString(content);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Report saved to: ${file.path}')),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report saved to: ${file.path}')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to save report')),

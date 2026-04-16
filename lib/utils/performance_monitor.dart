@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 /// Monitors and reports performance metrics for the simulation.
 class PerformanceMonitor {

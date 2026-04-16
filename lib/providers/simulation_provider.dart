@@ -21,6 +21,11 @@ class SimulationProvider with ChangeNotifier {
   final AudioManager _audioManager = AudioManager();
   String _previousStatus = 'Safe';
 
+  // Recording variables
+  bool isRecording = false;
+  int frameCount = 0;
+  List<Map<String, dynamic>> recordedData = [];
+
   /// Initializes the simulation with a set number of vehicles.
   void initializeSimulation(int vehicleCount, Size screenSize) {
     vehicles.clear();
@@ -74,6 +79,12 @@ class SimulationProvider with ChangeNotifier {
 
     // Update metrics
     updateMetrics();
+
+    // Record data if recording
+    if (isRecording) {
+      recordFrameData();
+    }
+
     notifyListeners();
   }
 
@@ -145,10 +156,65 @@ class SimulationProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Starts recording dataset.
+  void startRecording() {
+    isRecording = true;
+    frameCount = 0;
+    recordedData.clear();
+    notifyListeners();
+  }
+
+  /// Stops recording dataset.
+  void stopRecording() {
+    isRecording = false;
+    notifyListeners();
+  }
+
   /// Resets the simulation.
   void resetSimulation(Size screenSize) {
     isRunning = false;
+    isRecording = false;
+    frameCount = 0;
+    recordedData.clear();
     initializeSimulation(vehicles.length, screenSize);
+  }
+
+  /// Records data for the current frame.
+  void recordFrameData() {
+    frameCount++;
+    String timestamp = DateTime.now().toIso8601String();
+
+    for (int i = 0; i < vehicles.length; i++) {
+      Vehicle v = vehicles[i];
+
+      // Calculate static risk (min distance to other vehicles)
+      double staticRisk = double.infinity;
+      double temporalRisk = 0.0;
+
+      for (int j = 0; j < vehicles.length; j++) {
+        if (i != j) {
+          double dist = AILogic.calculateSafeDistance(v, vehicles[j]);
+          double prob = AILogic.calculateCollisionProbability(v, vehicles[j]);
+          if (dist < staticRisk) staticRisk = dist;
+          if (prob > temporalRisk) temporalRisk = prob;
+        }
+      }
+
+      recordedData.add({
+        'Frame': frameCount,
+        'Timestamp': timestamp,
+        'VehicleID': i,
+        'X': v.position.dx,
+        'Y': v.position.dy,
+        'VX': v.velocity.dx,
+        'VY': v.velocity.dy,
+        'AX': v.acceleration.dx,
+        'AY': v.acceleration.dy,
+        'Status': status,
+        'StaticRisk': staticRisk,
+        'TemporalRisk': temporalRisk,
+      });
+    }
   }
 
   /// Gets summarized metrics for results page.

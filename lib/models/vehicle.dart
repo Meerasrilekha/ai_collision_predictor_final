@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// Represents a flying vehicle in the simulation.
@@ -7,7 +5,8 @@ import 'package:flutter/material.dart';
 class Vehicle {
   Offset position;
   Offset velocity;
-  double height; // For 3D visualization effect
+  Offset acceleration;
+  double height; // For 3D visualizationt  effect
   final double maxSpeed;
   final double maxForce;
   final double safeDistance;
@@ -16,6 +15,7 @@ class Vehicle {
   Vehicle({
     required this.position,
     required this.velocity,
+    this.acceleration = Offset.zero,
     this.maxSpeed = 2.0,
     this.maxForce = 0.1,
     this.safeDistance = 50.0,
@@ -25,18 +25,20 @@ class Vehicle {
 
   /// Updates the vehicle's position based on its velocity.
   void update() {
+    velocity += acceleration;
+    // Limit velocity to maxSpeed
+    if (velocity.distance > maxSpeed) {
+      velocity = velocity / velocity.distance * maxSpeed;
+    }
     position += velocity;
+    acceleration = Offset.zero; // Reset acceleration each frame
   }
 
   /// Applies a force to the vehicle, limiting it to maxForce.
   void applyForce(Offset force) {
     if (force.distance == 0.0) return; // Avoid division by zero
     Offset limitedForce = force * maxForce / force.distance;
-    velocity += limitedForce;
-    // Limit velocity to maxSpeed
-    if (velocity.distance > maxSpeed) {
-      velocity = velocity / velocity.distance * maxSpeed;
-    }
+    acceleration += limitedForce;
   }
 
   /// Calculates separation force from nearby vehicles to avoid collisions.

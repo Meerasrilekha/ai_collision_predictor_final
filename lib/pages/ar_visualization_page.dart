@@ -23,10 +23,10 @@ class _ARVisualizationPageState extends State<ARVisualizationPage>
   bool _isTrainingMode = false;
   late AnimationController _particleController;
   late Animation<double> _particleAnimation;
-  List<Offset> _rainParticles = [];
-  List<Offset> _windParticles = [];
+  final List<Offset> _rainParticles = [];
+  final List<Offset> _windParticles = [];
   Timer? _particleTimer;
-  Random _random = Random();
+  final Random _random = Random();
 
   @override
   void initState() {

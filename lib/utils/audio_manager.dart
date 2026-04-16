@@ -8,24 +8,7 @@ class AudioManager {
 
   /// Plays a warning sound based on status.
   Future<void> playAlertSound(String status) async {
-    String assetPath;
-    switch (status) {
-      case 'Caution':
-        assetPath = 'assets/sounds/caution.mp3';
-        break;
-      case 'Conflict':
-        assetPath = 'assets/sounds/conflict.mp3';
-        break;
-      default:
-        return; // No sound for Safe
-    }
-
-    try {
-      await _audioPlayer.play(AssetSource(assetPath));
-    } catch (e) {
-      // Fallback to TTS if audio file not found
-      speakAlert(status);
-    }
+    // Note: Sound files are not included; using TTS only
     // Always speak the alert for accessibility
     speakAlert(status);
   }
