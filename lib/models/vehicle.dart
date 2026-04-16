@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Represents a flying vehicle in the simulation.
 /// Each vehicle has position, velocity, and properties for swarm intelligence.
+// Updated: Added acceleration support for realistic physics simulation
 class Vehicle {
   Offset position;
   Offset velocity;

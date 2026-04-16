@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
 
 /// Utility class for AI-driven collision prediction and swarm intelligence logic.
+// Updated: Optimized collision detection algorithms
 class AILogic {
   /// Calculates the safe distance (Ds) between two vehicles.
   /// Simple heuristic: minimum distance required to avoid collision.

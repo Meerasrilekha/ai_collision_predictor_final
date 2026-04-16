@@ -8,6 +8,7 @@ import 'dart:async';
 
 /// Simulation page visualizing flying cars with swarm intelligence.
 /// Displays real-time metrics and AR-style overlay.
+// Updated: Added recording controls and performance monitoring
 class SimulationPage extends StatefulWidget {
   const SimulationPage({super.key});
 

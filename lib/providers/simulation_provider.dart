@@ -6,6 +6,7 @@ import '../utils/audio_manager.dart';
 import '../providers/environmental_provider.dart';
 
 /// Provider for managing simulation state, including vehicles, metrics, and controls.
+// Updated: Enhanced with data recording capabilities for CSV export
 class SimulationProvider with ChangeNotifier {
   List<Vehicle> vehicles = [];
   bool isRunning = false;
